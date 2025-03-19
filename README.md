@@ -6,7 +6,7 @@ Host applications in Kubernetes and expose them publicly and securely via ingres
 
 This project deploys an EKS cluster with automated certificate management, DNS integration, and a fully functional ingress controller. ArgoCD integration allows for GitOps-based deployments. *Optional AWS Fargate is used to run workloads without managing EC2 instances, reducing operational complexity.*
 
-## Tools Utilized
+## Tools Utilised
 
 - **Helm (Kubernetes package manager)** - To deploy and manage the application.
 - **NGINX Ingress Controller** - Manages ingress and automates SSL certificate issuance.
@@ -192,4 +192,67 @@ Error: Failed to get existing workspaces: S3 bucket "eks-tfstate-amir" does not 
 /////
 
 # Add IAM rules to s3 via clickOps, Review+kubectl
-42. `aws eks --region eu-west-2 update kubeconfig --name eks-lab`
+42. `aws eks --region eu-west-2 update-kubeconfig --name eks-lab`
+
+updates cluster context into a local cluster. When `kubectl get nodes` is entered it returns an error, as you cant access it. This where where you Configure eks IAM access entry via ClickOps on the AWS console to access the cluster on the Command Line Interface. Obtain the aws credentials arn for IAM access entry on the CLI with the command `aws sts get-caller-identity`.
+
+On the AWS console on Create Access Entry:
+1)
+ - IAM principle: Enter ARN
+ - Username: eks-admin
+ - Group name: admin
+ - Policy name: Add `AmazonEKSAdminPolicy` and `AmazonEKSClusterPolicy`
+
+This gives the user access to the cluster. Generally for best practice, in production don't give these privileges and take a least privileges approach. After creation, you will have access to the cluster.
+
+# Deploying the resources
+
+in `helm.tf` deploy
+- CertManger
+- Nginx Ingress controller
+- External DNS
+
+Instead of a manual installation (`helm install`), this will be automated via terraform for best practice.
+
+*Note: Helm allows you to package a bunch of resources like pods, deployments, services, ingress etc. into one package, then places deploys into a helm chart. You install a helm chart into your cluster*
+
+### Nginx deployment and certManager deployment
+
+Nginx will be your endpoint, or access point for anything in your cluster
+
+1) Create `helm.tf` deploy helm releases with the helm release for Nginx. Obtain the helm release from the registry, under provider. Set wait for waits for the IAM role to be created first and installCDRs is telling the helm chart to create CRDs alongside the certManager deployment.
+
+*Note:  Helm (a package manager for Kubernetes) has the ability to create a namespace automatically if it doesn’t already exist before deploying resources inside it.*
+
+2) Create a helm release for CertManager. In this instance, I want a custom certManager. This is done by creating a `helm-values folder > cert-manager.yaml` and we add some inputs (part of the helm chart) These values will customise your helm chart. Add the resources:
+
+- ingressShim
+- ExtraArgs
+- ServiceAccount
+
+### ExternalDNS deployment
+
+its important to create in the DNS for two reasons:
+
+  - When you can resource kubernetes and different applications and platform services, you want them to be in their own namespaces isolated from other resources and pods
+  - irsa created in the right namespace for each one (certManager and External DNS). If the IAM arent created in the right name spaces, they wont be able to access the charts (in helm release). So each `irsa.tf` role has to have access to each chart on `helm.tf`.
+
+1) Create External DNS chart values with `helm-values > external-dns.yaml` and add a External DNS resource block again within its own namespace named `external dns` including `set - wait for` and the values.
+
+
+Now all three resources have been created. Link helm.tf resources with a cluster by utilizing a provider.
+
+Defines the Helm provider to manage Kubernetes resources using Helm by:
+
+```
+"helm"
+Kubernetes  # helm accesses the actual cluster (kubernetes)
+host: Specifies the API server endpoint of the EKS cluster.
+cluster_ca_certificate = To access the helm cluster
+api_version = specifies APIVersion
+args = aws ["eks get-token", "--cluster-name", data.aws_eks_cluster.cluster.name]: executes authentication via AWS CLI
+```
+
+
+
+
