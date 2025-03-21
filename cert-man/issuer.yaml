@@ -1,0 +1,21 @@
+ApiVersion: cert-manager.io/v1
+Kind: ClusterIssuer
+Metadata:
+  Name: issuer
+spec:
+  acme:
+    server: "https://acme-v02.api.letsencrypt.org/directory"
+    email: "amirbile@hotmail.co.uk"
+    privateKeySecretRef:
+      name: issuer
+    solvers:
+    - dns01:
+        route53:
+        hostedZoneID:
+          region: us-west-2
+      selector: {}
+        dnsZones:
+        -""
+    -http01:
+        ingress:
+        class: nginx

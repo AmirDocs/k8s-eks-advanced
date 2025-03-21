@@ -36,7 +36,7 @@ resource "helm_release" "cert_manager" {
 resource "helm_release" "external_dns" {
   name = "external-dns"
 
-  repository = "https://charts.bitnami.com/bitnami"
+  repository = "oci://registry-1.docker.io/bitnamicharts"  # changed from bitnami to io.
   chart      = "external-dns"
 
   create_namespace = true
@@ -44,7 +44,7 @@ resource "helm_release" "external_dns" {
 
   set {
     name  = "wait-for"
-    value = module.cert_manager_irsa_role.iam_role_arn
+    value = module.external_dns_irsa_role.iam_role_arn
   }
 
   values = [

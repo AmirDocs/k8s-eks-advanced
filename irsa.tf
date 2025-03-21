@@ -19,12 +19,12 @@ module "cert_manager_irsa_role" {
 
 # External DNS IRSA #
 
-module "external_dns_irsa" {
+module "external_dns_irsa_role" {
   source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
   version = "5.2.0"
 
   role_name                     = "external-dns"
-  attach_cert_manager_policy    = true
+  attach_external_dns_policy = true
   external_dns_hosted_zone_arns = ["arn:aws:route53:::hostedzone/Z00435142MHLA7LA0KLSO"]
 
   oidc_providers = {

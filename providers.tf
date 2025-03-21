@@ -27,7 +27,7 @@ provider "aws" {
 
 data "aws_eks_cluster" "cluster" {
   name = module.eks.cluster_name
-  
+
 }
 provider "helm" {
   kubernetes {

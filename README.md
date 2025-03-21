@@ -218,7 +218,7 @@ Instead of a manual installation (`helm install`), this will be automated via te
 
 ### Nginx deployment and certManager deployment
 
-Nginx will be your endpoint, or access point for anything in your cluster
+Nginx will be your endpoint, or access point for anything in your cluster.
 
 1) Create `helm.tf` deploy helm releases with the helm release for Nginx. Obtain the helm release from the registry, under provider. Set wait for waits for the IAM role to be created first and installCDRs is telling the helm chart to create CRDs alongside the certManager deployment.
 
@@ -240,7 +240,7 @@ its important to create in the DNS for two reasons:
 1) Create External DNS chart values with `helm-values > external-dns.yaml` and add a External DNS resource block again within its own namespace named `external dns` including `set - wait for` and the values.
 
 
-Now all three resources have been created. Link helm.tf resources with a cluster by utilizing a provider.
+Now all three resources have been created. Link helm.tf resources with a cluster by utilising a provider.
 
 Defines the Helm provider to manage Kubernetes resources using Helm by:
 
@@ -252,7 +252,15 @@ cluster_ca_certificate = To access the helm cluster
 api_version = specifies APIVersion
 args = aws ["eks get-token", "--cluster-name", data.aws_eks_cluster.cluster.name]: executes authentication via AWS CLI
 ```
+and a data block in `providers.tf` to export your eks cluster from `eks.tf` so it can be applied to arguments.
 
+The ingress controller creates a (EC2) load balancer type service behind the scenes `kubectl get svc -n nginx-ingress`. This is the load balancer that hosts nginx. NLB load balancer (layer 4) so it goes straight through.
+include a file for troubleshooting.
 
+#### check Logs with:
+- `kubectl -n external-dns logs external-dns-64b45467fc-9xzbq`: 
+- `kubectl -n cert-manager logs cert-manager-66ff9fbf59-k2gjj`: cert-manager is ready but does not have a cluster issuer.
 
+## Deploying ArgoCD
 
+Before deploying ArgoCD we need a cluster issuer - this allows us to verify SSL. I will use the `cert-man` folder for this.
