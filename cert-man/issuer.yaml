@@ -1,21 +1,24 @@
-ApiVersion: cert-manager.io/v1
-Kind: ClusterIssuer
-Metadata:
-  Name: issuer
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: issuer
 spec:
   acme:
-    server: "https://acme-v02.api.letsencrypt.org/directory"
-    email: "email@hotmail.co.uk"
+    server: "https://acme-v02.api.letsencrypt.org/directory"  # Prod server
+    email: "amirbile@hotmail.co.uk"
     privateKeySecretRef:
       name: issuer
     solvers:
-    - dns01:
-        route53:
-        hostedZoneID:
-          region: us-west-2
-      selector: {}
-        dnsZones:
-        -""
-    -http01:
-        ingress:
-        class: nginx
+      - dns01:
+          route53:
+            hostedZoneID: Z06920746EPQXTK8Q687
+            region: eu-west-2
+        selector: 
+          dnsZones:
+            - lab.amirbeile.uk
+      - http01:
+          ingress:
+            class: nginx
+        selector: 
+          dnsZones:
+            - lab.amirbeile.uk

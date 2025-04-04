@@ -1,6 +1,6 @@
 locals {
   name   = "eks-lab"
-  domain = "lab.amirbeile.co.uk"
+  domain = "lab.amirbeile.uk"
   region = "eu-west-2"
 
   tags = {

@@ -2,11 +2,11 @@ provider: aws
 
 env:
 - name: AWS_DEFAULT_REGION
-  value: us-west-2
+  value: eu-west-2
 
 serviceAccount:  #resource that allows you to have these permissions
   annotations:
-    eks.amazonaws.com/role-arn: "arn:aws:iam::872515255126:role/external-dns"
+    eks.amazonaws.com/role-arn: arn:aws:iam::872515255126:role/external-dns
 
 domainFilters:
 - lab.amirbeile.uk  # Telling ExternalDNS to only manage records that end in this domain

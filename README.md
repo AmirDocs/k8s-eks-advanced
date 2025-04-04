@@ -197,7 +197,7 @@ Error: Failed to get existing workspaces: S3 bucket "eks-tfstate-amir" does not 
 updates cluster context into a local cluster. When `kubectl get nodes` is entered it returns an error, as you cant access it. This where where you Configure eks IAM access entry via ClickOps on the AWS console to access the cluster on the Command Line Interface. Obtain the aws credentials arn for IAM access entry on the CLI with the command `aws sts get-caller-identity`.
 
 On the AWS console on Create Access Entry:
-1)
+1) 
  - IAM principle: Enter ARN
  - Username: eks-admin
  - Group name: admin
@@ -258,9 +258,74 @@ The ingress controller creates a (EC2) load balancer type service behind the sce
 include a file for troubleshooting.
 
 #### check Logs with:
-- `kubectl -n external-dns logs external-dns-64b45467fc-9xzbq`: 
-- `kubectl -n cert-manager logs cert-manager-66ff9fbf59-k2gjj`: cert-manager is ready but does not have a cluster issuer.
+- `kubectl -n external-dns logs external-dns-5d5457fff-wpgd6`: 
+- `kubectl -n cert-manager logs cert-manager-66ff9fbf59-jg6gc`: cert-manager is ready but does not have a cluster issuer.
 
 ## Deploying ArgoCD
 
 Before deploying ArgoCD we need a cluster issuer - this allows us to verify SSL. I will use the `cert-man` folder for this.
+
+There are 2 types of servers: Production and Staging server. For this a Production server is used.
+
+### Create issuer
+
+When later creating an ingress resource. This issuer will  be referenced.
+
+`cert-man/issuer.yaml` and input your hosted zone ID and DNS zones.
+
+1) 
+Deploy cert issuer with:
+```
+kubectl apply -f cert-man/issuer.yaml
+```
+
+2) 
+ Use to view issuer status
+```
+kubectl get clusterissuers.cert-manager.io
+```
+
+### Create ArgoCD Deploy resource
+
+Create a ArgoCD helm release resource in helm.tf.
+
+external-dns will add the record to route 53 that will point to ArgoCD and cert-manager will verify that certificate.
+
+
+# Troubleshooting:
+
+problem: command ran which deleted the argocd-server/ingress.
+
+must be obtained with: `kubectl get ingress argocd-server -n argo-cd`
+1) argocd.yaml, issuer.yaml, data eks/helm (providers) and helm release (helm.tf) all hashtagged out. start terraform without them.
+
+ - before starting terraform add export values, aws eks line(scroll up) then terraform plan, terraform apply.
+
+2) 
+
+
+values = [
+    "${file("helm-values/argocd.yaml")}"
+  ]
+
+  server:
+  # to disable SSL redirection as our ingress controller is not configured to handle SSL.
+  extraArgs:
+  - --insecure
+  service:
+    type: ClusterIP
+  ingress:
+    enabled: true
+    ingressClassName: "nginx" 
+    annotations:
+      nginx.org/hsts: "false"  # Disabling HSTS. Strict rules.
+      cert-manager.io/cluster-issuer: issuer  # Issuer to use for cert-manager
+    hosts:
+    - argocd.lab.amirbeile.uk # Hostname for the ingress. xxx.hostname
+    tls:
+    - secretName: argocd-ingress-tls
+      hosts:
+      - argocd.lab.amirbeile.uk
+
+
+      upgrade helm release: helm upgrade argocd argo/argo-cd -f helm-values/argocd.yaml -n argo-cd

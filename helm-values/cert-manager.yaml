@@ -10,6 +10,8 @@
 #   annotations:
 #     eks.amazonaws.com/role-arn: "arn:aws:iam::872515255126:role/cert-manager"
 
+#Below used not above
+
 ingressShim:
   defaultIssuerName: letsencrypt
   defaultIssuerKind: ClusterIssuer
@@ -20,4 +22,4 @@ extraArgs:
 
 serviceAccount:
   annotations:
-    eks.amazonaws.com/role-arn: "arn:aws:iam::872515255126:role/cert-manager"
+    eks.amazonaws.com/role-arn: arn:aws:iam::872515255126:role/cert-manager

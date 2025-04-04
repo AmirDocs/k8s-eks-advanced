@@ -1,0 +1,18 @@
+server:
+  # to disable SSL redirection as our ingress controller is not configured to handle SSL.
+  # insecure: true
+  service:
+    type: ClusterIP
+  ingress:
+    enabled: true
+    ingressClassName: "nginx" 
+    annotations:
+      nginx.org/hsts: "false"  # Disabling HSTS. Strict rules.
+      cert-manager.io/cluster-issuer: issuer  # Issuer to use for cert-manager
+      nginx.ingress.kubernetes.io/ssl-passthrough: "true"
+    hosts:
+    - argocd.lab.amirbeile.uk # Hostname for the ingress. xxx.hostname
+    tls:
+      - secretName: argocd-ingress-tls
+        hosts:
+        - argocd.lab.amirbeile.uk
