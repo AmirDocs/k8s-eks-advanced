@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: the-app-hub
-          image: amirbeile/the-app-hub:latest
+          image: react-app-image:latest
           ports:
             - containerPort: 3000
 
