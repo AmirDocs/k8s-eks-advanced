@@ -4,8 +4,12 @@ metadata:
   name: issuer
 spec:
   acme:
-    server: "https://acme-v02.api.letsencrypt.org/directory"  # Prod server
-    email: "amirbile@hotmail.co.uk"
+    server: https://acme-v02.api.letsencrypt.org/directory  # Prod server
+    email: 
+      valueFrom:
+        secretKeyRef:
+          name: acme-secrets
+          key: email
     privateKeySecretRef:
       name: issuer
     solvers:

@@ -1,25 +1,11 @@
-# ingressShim:
-#   defaultACMEChallengeType: dns01  # For TLSz
-#   defaultACMEChallengeProvider: route53
-
-# extraArgs:
-# - --dns01-recursive-nameservers="8.8.8.8:53"
-# - --dns01-recursive-nameservers-only
-
-# serviceAccount:  #resource that allows you to have these permissions
-#   annotations:
-#     eks.amazonaws.com/role-arn: "arn:aws:iam::872515255126:role/cert-manager"
-
-#Below used not above
-
-ingressShim:
-  defaultIssuerName: letsencrypt
-  defaultIssuerKind: ClusterIssuer
-
 extraArgs:
   - --dns01-recursive-nameservers=8.8.8.8:53
   - --dns01-recursive-nameservers-only
 
 serviceAccount:
   annotations:
-    eks.amazonaws.com/role-arn: arn:aws:iam::872515255126:role/cert-manager
+    eks.amazonaws.com/role-arn:
+      valueFrom:
+        secretKeyRef:
+          name: aws-secrets  
+          key: cert-manager-role-arn    

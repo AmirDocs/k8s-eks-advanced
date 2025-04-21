@@ -1,0 +1,24 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: apps
+  namespace: argo-cd
+spec:
+  project: default  
+  source:
+    repoURL: https://github.com/AmirDocs/k8s-eks-advanced.git # ArgoCD accesses this repo first
+    targetRevision: HEAD  
+    path: apps # Then ArgoCD accesses this path in the repo.
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: apps
+  syncPolicy:
+    automated:
+      # Ensures that resources removed from GitHub are also deleted from the cluster
+      prune: true 
+      # Any modifications in the cluster will return back to original state as defined in the source (Github repo)
+      selfHeal: true 
+      # Prevents deletion when GitHub is temporarily empty (avoids downtime)
+      allowEmpty: false 
+    syncOptions:    
+      - CreateNamespace=true  

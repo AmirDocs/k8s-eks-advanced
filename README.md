@@ -329,3 +329,27 @@ values = [
 
 
       upgrade helm release: helm upgrade argocd argo/argo-cd -f helm-values/argocd.yaml -n argo-cd
+
+## ArgoCD
+
+### Logging in
+
+Username is admin. Retrieve argo pass with 
+
+`kubectl get secret argocd-initial-admin-secret -n argo-cd -o jsonpath='{.data.password}' | base64 --decode`
+
+Breakdown of the above code
+```
+# Retrieves the secret in base64
+ - kubectl get secret argocd-initial-admin-secret -n argo-cd -o 
+ retrieves the secret in base64
+
+# decode base64
+ - echo "*****" | base64 -d
+```
+
+ ### Deploying application on ArgoCD
+
+App condition error will occur. Must deploy `apps/app-hub.yaml` on github first.
+kubectl apply -f argo-cd/apps-argo.yaml
+kubectl apply -f .secrets.yaml

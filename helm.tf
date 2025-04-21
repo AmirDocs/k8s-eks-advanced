@@ -9,17 +9,7 @@ resource "helm_release" "nginx_ingress" {
   create_namespace = true
   namespace        = "ingress-nginx"
 
-  values = [
-    <<EOF
-controller:
-  service:
-    type: LoadBalancer
-  watchIngressWithoutClass: true
-EOF
-  ]
-
-  wait = true # Ensures the release is deployed before Terraform continues
-}             # Cluster IP service created by default, service type unnecessary.
+}
 
 
 resource "helm_release" "cert_manager" {
@@ -29,11 +19,6 @@ resource "helm_release" "cert_manager" {
 
   create_namespace = true
   namespace        = "cert-manager"
-
-  # set {
-  #   name  = "wait-for"
-  #   value = module.cert_manager_irsa_role.iam_role_arn
-  # }
 
   set {
     name  = "installCRDs" # custom resource definitions

@@ -6,7 +6,11 @@ env:
 
 serviceAccount:  #resource that allows you to have these permissions
   annotations:
-    eks.amazonaws.com/role-arn: arn:aws:iam::872515255126:role/external-dns
+    eks.amazonaws.com/role-arn:
+      valueFrom:
+        secretKeyRef:
+          name: aws-secrets  
+          key: cert-manager-role-arn 
 
 domainFilters:
 - lab.amirbeile.uk  # Telling ExternalDNS to only manage records that end in this domain
