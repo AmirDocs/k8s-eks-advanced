@@ -1,35 +1,35 @@
-# Stage 1: Build stage #
-FROM python:3.12-slim AS base
+# Stage 1: Builder
+FROM python:3.12-slim AS builder
 
 WORKDIR /app
 
-# Install only the necessary dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    libgl1-mesa-glx \
-    libglib2.0-0 && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
-
-# Install dependencies
+# Install Python dependencies only
 RUN pip install --no-cache-dir flask
 
+# Copy the entire app directory (as in your original Dockerfile)
+COPY . .
 
-# Stage 2: Final stage #
+# Stage 2: Runtime
 FROM python:3.12-slim
 
 WORKDIR /app
 
-# Install only the runtime dependencies
+# Install runtime OS dependencies only
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libgl1-mesa-glx \
     libglib2.0-0 && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Copy only necessary files from build stage
-COPY --from=base /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
-COPY --from=base /app /app
+# Copy installed Python packages from builder
+COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
 
-# Expose the application port
+# Copy the entire app directory from builder stage
+COPY --from=builder /app /app
+
+# Clean up Python cache
+RUN find /usr/local/lib/python3.12/ -name '__pycache__' -exec rm -r {} + || true && \
+    find /usr/local/lib/python3.12/ -name '*.pyc' -delete || true
+
 EXPOSE 3000
 
-# Run the app
 CMD ["python", "app.py"]
