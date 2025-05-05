@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: detect-app
-          image: 872515255126.dkr.ecr.eu-west-2.amazonaws.com/detect-app:latest
+          image: 872515255126.dkr.ecr.eu-west-2.amazonaws.com/detect-app
           ports:
             - containerPort: 3000
 

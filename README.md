@@ -316,8 +316,11 @@ Breakdown of the above code
 
  ### Deploying application on ArgoCD
 
-App condition error will occur. Must deploy `apps/app-hub.yaml` on github first.
-kubectl apply -f argo-cd/apps-argo.yaml
+App condition error will occur. Must deploy `app-argocd.yaml` and `deploy-config.yaml` on github first.
+
+Apply app config file with `kubectl apply -f config-argo-app/app-argocd.yaml`
+
+### 
 
 
 # troubleshooting:
