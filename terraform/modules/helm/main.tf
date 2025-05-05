@@ -80,3 +80,21 @@ resource "helm_release" "argocd_deploy" {
 
 
 }
+
+resource "helm_release" "prometheus" {
+
+  name       = "prometheus"
+  repository = "https://prometheus-community.github.io/helm-charts"
+  chart      = "kube-prometheus-stack"
+  timeout    = "600"
+
+  create_namespace = true
+  namespace        = "prometheus"
+
+  values = [
+    file("../helm-values/prometheus.yaml"),
+    file("../helm-values/grafana.yaml")
+  ]
+
+
+}

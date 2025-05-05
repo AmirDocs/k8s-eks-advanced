@@ -1,0 +1,13 @@
+grafana:
+  ingress:
+    enabled: true
+    ingressClassName: "nginx"  
+    annotations:
+      nginx.org/hsts: "false"
+      cert-manager.io/cluster-issuer: issuer
+    hosts:
+    - grafana.lab.amirbeile.uk
+    tls:
+    - secretName: wildcard-tls
+      hosts:
+      - grafana.lab.amirbeile.uk

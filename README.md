@@ -318,19 +318,15 @@ Breakdown of the above code
 
 App condition error will occur. Must deploy `app-argocd.yaml` and `deploy-config.yaml` on github first.
 
-Apply app config file with `kubectl apply -f config-argo-app/app-argocd.yaml`
+Register Argo CD Application with
+```
+kubectl apply -f config-argo-app/app-argocd.yaml
+```
 
-### 
+### Prometheus and Grafana
 
+Configure the Prometheus and Grafana helm release and helm-values.
 
-# troubleshooting:
+Check you
 
-rename argo-cd folder that has apps-argo,yaml
-rm .terraform and terraform init or reconfigure ect.
-Docker 
-
-nginx-ingress has been changed to ingress-nginx
-
- - before starting terraform add export values, aws eks line(scroll up) then terraform plan, terraform apply.
-
-      upgrade helm release: helm upgrade argocd argo/argo-cd -f helm-values/argocd.yaml -n argo-cd
+> kubectl apply -f cert-man/certificate.yaml
