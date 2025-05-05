@@ -5,11 +5,7 @@ metadata:
 spec:
   acme:
     server: https://acme-v02.api.letsencrypt.org/directory  # Prod server
-    email: 
-      valueFrom:
-        secretKeyRef:
-          name: acme-secrets
-          key: email
+    email: amirbile@hotmail.co.uk
     privateKeySecretRef:
       name: issuer
     solvers:

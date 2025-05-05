@@ -4,8 +4,4 @@ extraArgs:
 
 serviceAccount:
   annotations:
-    eks.amazonaws.com/role-arn:
-      valueFrom:
-        secretKeyRef:
-          name: aws-secrets  
-          key: cert-manager-role-arn    
+    eks.amazonaws.com/role-arn: "arn:aws:iam::872515255126:role/cert-manager"

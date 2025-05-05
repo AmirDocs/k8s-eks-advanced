@@ -271,20 +271,22 @@ There are 2 types of servers: Production and Staging server. For this a Producti
 
 When later creating an ingress resource. This issuer will  be referenced.
 
-`cert-man/issuer.yaml` and input your hosted zone ID and DNS zones.
+*My issuer file: `cert-man/issuer.yaml`*
 
-1) 
-Deploy cert issuer with:
+   - Deploy cert issuer with:
 ```
 kubectl apply -f cert-man/issuer.yaml
 ```
-
-2) 
- Use to view issuer status
+   -  Use to view issuer status
 ```
 kubectl get clusterissuers.cert-manager.io
 ```
 
+
+   - View ingress and host URL with 
+```
+kubectl get ingress -A
+```
 ### Create ArgoCD Deploy resource
 
 Create a ArgoCD helm release resource in helm.tf.
@@ -292,59 +294,23 @@ Create a ArgoCD helm release resource in helm.tf.
 external-dns will add the record to route 53 that will point to ArgoCD and cert-manager will verify that certificate.
 
 
-# Troubleshooting:
-
-problem: command ran which deleted the argocd-server/ingress.
-
-must be obtained with: `kubectl get ingress argocd-server -n argo-cd`
-1) argocd.yaml, issuer.yaml, data eks/helm (providers) and helm release (helm.tf) all hashtagged out. start terraform without them.
-
- - before starting terraform add export values, aws eks line(scroll up) then terraform plan, terraform apply.
-
-2) 
-
-
-values = [
-    "${file("helm-values/argocd.yaml")}"
-  ]
-
-  server:
-  # to disable SSL redirection as our ingress controller is not configured to handle SSL.
-  extraArgs:
-  - --insecure
-  service:
-    type: ClusterIP
-  ingress:
-    enabled: true
-    ingressClassName: "nginx" 
-    annotations:
-      nginx.org/hsts: "false"  # Disabling HSTS. Strict rules.
-      cert-manager.io/cluster-issuer: issuer  # Issuer to use for cert-manager
-    hosts:
-    - argocd.lab.amirbeile.uk # Hostname for the ingress. xxx.hostname
-    tls:
-    - secretName: argocd-ingress-tls
-      hosts:
-      - argocd.lab.amirbeile.uk
-
-
-      upgrade helm release: helm upgrade argocd argo/argo-cd -f helm-values/argocd.yaml -n argo-cd
-
 ## ArgoCD
+
+ArgoCD will be deployable once the above steps are complete.
 
 ### Logging in
 
-Username is admin. Retrieve argo pass with 
+Username is admin. Retrieve argo password with 
 
 `kubectl get secret argocd-initial-admin-secret -n argo-cd -o jsonpath='{.data.password}' | base64 --decode`
 
 Breakdown of the above code
 ```
-# Retrieves the secret in base64
+# Retrieves the secret in base64 #
  - kubectl get secret argocd-initial-admin-secret -n argo-cd -o 
  retrieves the secret in base64
 
-# decode base64
+# decode base64 #
  - echo "*****" | base64 -d
 ```
 
@@ -352,4 +318,16 @@ Breakdown of the above code
 
 App condition error will occur. Must deploy `apps/app-hub.yaml` on github first.
 kubectl apply -f argo-cd/apps-argo.yaml
-kubectl apply -f .secrets.yaml
+
+
+# troubleshooting:
+
+rename argo-cd folder that has apps-argo,yaml
+rm .terraform and terraform init or reconfigure ect.
+Docker 
+
+nginx-ingress has been changed to ingress-nginx
+
+ - before starting terraform add export values, aws eks line(scroll up) then terraform plan, terraform apply.
+
+      upgrade helm release: helm upgrade argocd argo/argo-cd -f helm-values/argocd.yaml -n argo-cd
