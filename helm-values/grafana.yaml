@@ -8,6 +8,6 @@ grafana:
     hosts:
     - grafana.lab.amirbeile.uk
     tls:
-    - secretName: wildcard-tls
+    - secretName: grafana-tls
       hosts:
       - grafana.lab.amirbeile.uk

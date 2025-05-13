@@ -22,3 +22,4 @@ spec:
         selector: 
           dnsZones:
             - lab.amirbeile.uk
+            - grafana.lab.amirbeile.uk

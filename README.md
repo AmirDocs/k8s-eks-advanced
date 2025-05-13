@@ -325,8 +325,26 @@ kubectl apply -f config-argo-app/app-argocd.yaml
 
 ### Prometheus and Grafana
 
-Configure the Prometheus and Grafana helm release and helm-values.
+Configure the Prometheus and Grafana helm release and helm-values. 
 
-Check you
+To fix the Grafana certificate issue, a new certificate was added on `grafana.yaml` (SecretName) and the Grafana dns was added to `issuer.yaml` dnsZones. 
 
-> kubectl apply -f cert-man/certificate.yaml
+# Terraform Destroy steps
+
+```
+└> terraform destroy -target=module.helm.helm_release.nginx_ingress
+terraform destroy -target=module.helm.helm_release.cert_manager
+terraform destroy -target=module.helm.helm_release.external_dns
+terraform destroy -target=module.helm.helm_release.argocd_deploy
+terraform destroy -target=module.helm.helm_release.prometheus
+```
+
+```
+terraform destroy -auto-approve \
+  -target="module.infrastructure.module.cert_manager_irsa_role.aws_iam_policy.cert_manager[0]" \
+  -target="module.infrastructure.module.cert_manager_irsa_role.aws_iam_role.this[0]" \
+  -target="module.infrastructure.module.cert_manager_irsa_role.aws_iam_role_policy_attachment.cert_manager[0]" \
+  -target="module.infrastructure.module.external_dns_irsa_role.aws_iam_policy.external_dns[0]" \
+  -target="module.infrastructure.module.external_dns_irsa_role.aws_iam_role.this[0]" \
+  -target="module.infrastructure.module.external_dns_irsa_role.aws_iam_role_policy_attachment.external_dns[0]"
+  ```
