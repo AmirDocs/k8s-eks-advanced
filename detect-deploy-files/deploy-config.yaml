@@ -19,6 +19,13 @@ spec:
           image: 872515255126.dkr.ecr.eu-west-2.amazonaws.com/detect-app
           ports:
           - containerPort: 3000
+          volumeMounts:
+            - name: local-pvc
+              mountPath: /app/tmp
+      volumes:
+        - name: local-pvc
+          persistentVolumeClaim:
+          claimName: local-pvc
 
 ---
 apiVersion: v1
