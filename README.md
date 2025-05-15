@@ -1,67 +1,108 @@
-# EKS Cluster for Production
+**Production Ready Automated EKS Cluster Deployment with Helm and GitOps**
+==========================================================================
 
-## Objective
+Overview
+--------
 
-Host applications in Kubernetes and expose them publicly and securely via ingress controllers combined with signed SSL certificates for HTTPS. 
+This project automates the deployment of an AWS EKS Kubernetes cluster using Terraform and Helm, integrating essential tools such as NGINX Ingress Controller, Cert-Manager for automatic SSL management via Let’s Encrypt, External DNS syncing with Route53, and optional ArgoCD for GitOps-based continuous deployment and Prometheus & Grafana for monitoring and observability. The cluster supports secure, public-facing apps via HTTPS with automated DNS and certificate management. AWS Fargate is mentioned but not used in this setup. Terraform manages infrastructure, IAM roles, and Helm chart deployments, enabling a DRY, scalable, and production-grade Kubernetes environment.
 
-This project deploys an EKS cluster with automated certificate management, DNS integration, and a fully functional ingress controller. ArgoCD integration allows for GitOps-based deployments. *Optional AWS Fargate is used to run workloads without managing EC2 instances, reducing operational complexity.*
+<video controls src="screenshots/working-app-argocd.mp4" title="Preview of Argo CD and AI Model"></video>
 
-## Tools Utilised
+Objective
+---------
 
-- **Helm (Kubernetes package manager)** - To deploy and manage the application.
-- **NGINX Ingress Controller** - Manages ingress and automates SSL certificate issuance.
-- **Let's Encrypt (Certificate Authority)** - Automates SSL certificate issuance and renewal.
-- **Cert-Manager** - Automates certificate management.
-- **External DNS** - Syncs Kubernetes services with your DNS provider (Route53).
-- **ArgoCD (Optional)** - For GitOps continuous deployment.
-- **AWS Fargate** - Serverless compute engine for running Kubernetes pods without managing EC2 instances. *We wont be using this but it helps to know*
+Host applications in Kubernetes and expose them publicly and securely via ingress controllers combined with signed SSL certificates for HTTPS.
 
-## Steps
+This project deploys an EKS cluster with automated certificate management, DNS integration, and a fully functional ingress controller. ArgoCD integration allows for GitOps-based deployments.
 
-1. Write Terraform code to deploy and automate resources (VPCs, EKS Clusters, IAM roles, Service Accounts, etc.) in AWS.
-2. Deploy Helm charts (Cert-Manager, Ingress Controller, External DNS, etc.) via Terraform after the cluster is created.
-3. Deploy a test application and demonstrate how it:
-   - Uses SSL certificates for HTTPS.
-   - Communicates via ingress.
-   - Integrates with ArgoCD (if used).
+_Optional AWS Fargate is used to run workloads without managing EC2 instances, reducing operational complexity._
 
-## Delegate Cloudflare Domain to AWS
+Tools Utilised
+--------------
 
-1. Delegate Cloudflare Domain `amirbeile.uk` as the subdomain `lab.amirbeile.uk` to AWS via Route53.
-2. Save all four hosted zone Name Servers in Cloudflare and verify with:
+*   **Helm (Kubernetes package manager)** - To deploy and manage the application.
+    
+*   **NGINX Ingress Controller** - Manages ingress and automates SSL certificate issuance.
+    
+*   **Let's Encrypt (Certificate Authority)** - Automates SSL certificate issuance and renewal.
+    
+*   **Cert-Manager** - Automates certificate management.
+    
+*   **External DNS** - Syncs Kubernetes services with your DNS provider (Route53).
+    
+*   **ArgoCD (Optional)** - For GitOps continuous deployment.
+    
+*   **AWS Fargate** - Serverless compute engine for running Kubernetes pods without managing EC2 instances. _We won't be using this but it helps to know._
+    
+*   **Prometheus and Grafana:** Monitoring and Observability (in progress)
+    
 
-   ```bash
-   nslookup -type=NS lab.amirbeile.uk
-   ```
+Steps
+-----
 
+1.  Write Terraform code to deploy and automate resources (VPCs, EKS Clusters, IAM roles, Service Accounts, etc.) in AWS.
+    
+2.  Deploy Helm charts (Cert-Manager, Ingress Controller, External DNS, etc.) via Terraform after the cluster is created.
+    
+3.  Deploy a test application and demonstrate how it:
+    
+    *   Uses SSL certificates for HTTPS.
+        
+    *   Communicates via ingress.
+        
+    *   Integrates with ArgoCD (if used).
+        
 
-## `vpc.tf` and `locals.tf` Creation
+Dockerfile Build
+----------------
 
-1. **VPC Module**: Sourced from the community module to follow the DRY principle.
-2. **`locals.tf`**: Stores variables and key-value pairs to avoid hardcoding everything.
+1.  `aws ecr get-login-password --region | docker login --username AWS --password-stdin .dkr.ecr..amazonaws.com`
+    
+2.  `docker build -t detect-app .`
+    
+3.  `docker tag detect-app:latest .dkr.ecr..amazonaws.com/detect-app:latest`
+    
+4.  `docker push .dkr.ecr..amazonaws.com/detect-app:latest`
+    
 
-## Create EKS Cluster
+Delegate Cloudflare Domain to AWS
+---------------------------------
 
-1. **EKS Module**: Sourced from the community module to follow the DRY principle.
-2. **Public Access**: Set `allow_public_access = true` for testing.
-3. **IRSA (IAM Roles for Service Accounts)**:
-   - Enables IAM roles/policies to be associated with Kubernetes service accounts.
-   - Used later for Cert-Manager and External DNS.
-4. **VPC Configuration**:
-   - Add a VPC and public/private subnets.
-   - Control plane resides in public subnets; worker nodes in private subnets.
-5. **Worker Nodes**:
-   - Create managed worker nodes inside the EKS cluster.
-   *- Optionally, use AWS Fargate for serverless pod execution.*
+1.  Delegate Cloudflare Domain amirbeile.uk as the subdomain lab.amirbeile.uk to AWS via Route53.
+    
+2.  Verify host names with `nslookup -type=NS lab.amirbeile.uk`
+    
 
-For our certManager and External DNS to react with Route53 we need permissions. Cert manager simply allows us to create SSL certificate management. For this to happen it needs to access our Route 53 zone and create TXT records.
+vpc.tf and locals.tf Creation
+-----------------------------
 
- - TXT records allows a user or someone to actually verify that you own the domain.
- - External DNS allows the automation of adding these records.
+*   Use a community VPC module to adhere to DRY principles.
+    
+*   Use locals.tf for variable and key-value management.
+    
 
- ### *AWS Fargate Integration Optional - Not used in project.*
+Create EKS Cluster
+------------------
 
-1. Enable AWS Fargate in EKS by defining a `Fargate Profile`:
+*   Use community EKS module with allow\_public\_access = true for testing.
+    
+*   Enable IRSA (IAM Roles for Service Accounts) for Cert-Manager and External DNS.
+    
+*   VPC configured with public/private subnets; control plane public, nodes private.
+    
+*   Create managed worker nodes; optionally configure AWS Fargate (not used here).
+    
+
+**Permissions for Cert-Manager & External DNS**
+
+*   Cert-Manager needs Route53 access to create TXT records for domain validation.
+    
+*   External DNS automates DNS record creation.
+    
+
+### AWS Fargate Integration (Optional - Not used here)
+
+Enable AWS Fargate in EKS by defining a `Fargate Profile`. Example resource::
 
    ```hcl
    resource "aws_eks_fargate_profile" "default" {
@@ -75,54 +116,59 @@ For our certManager and External DNS to react with Route53 we need permissions. 
    }
    ```
 
-2. Deploy workloads to the `default` namespace, and they will automatically run on AWS Fargate.
-3. Verify Fargate pods:
+Verify Fargate pods:
 
-   ```bash
-   kubectl get pods -n default
-   ```
+`kubectl get pods -n default`
 
-## Cert-Manager and External DNS Permissions
+Cert-Manager and External DNS Permissions
+-----------------------------------------
 
-To interact with Route53, Cert-Manager and External DNS need permissions:
+*   Cert-Manager manages SSL certs.
+    
+*   External DNS manages DNS records in Route53.
+    
+*   Both require IAM permissions for Route53 hosted zones.
+    
 
-- **Cert-Manager**: Creates and manages SSL certificates.
-- **External DNS**: Automates adding DNS records.
-- **TXT Records**: Used for domain verification.
+IAM Roles for Service Accounts (IRSA) - Cert-Manager
+----------------------------------------------------
 
-## Create IAM Roles for Service Accounts (IRSA) - Cert-Manager
+*   Use community IRSA module.
+    
+*   Attach Cert-Manager policy.
+    
+*   Example:
+    
 
-1. Use the IRSA module from the community.
-2. Attach a Cert-Manager policy and set it to `true`. 
-3. Allow the `cert-manager` service account to modify Route53 hosted zones:
+`cert_manager_hosted_zone_arns = ["arn:aws:route53:::hostedzone/Z123456ABC"]`
 
-   ```hcl
-   cert_manager_hosted_zone_arns = ["arn:aws:route53:::hostedzone/Z123456ABC"]
-   ```
+**OIDC Explanation:**
 
-4. **OIDC (OpenID Connect) Explanation**:
+*   OIDC (OpenID Connect) links Kubernetes service accounts to AWS IAM roles.
+    
+*   IRSA (IAM Roles for Service Accounts) allows Kubernetes pods to access AWS securely.
+    
+*   Terraform configures OIDC providers for authentication.
+    
 
-   ```bash
-   🔹 OIDC (OpenID Connect) links Kubernetes service accounts with AWS IAM roles.
-   🔹 IRSA (IAM Roles for Service Accounts) allows Kubernetes workloads to access AWS securely.
-   🔹 Terraform uses OIDC providers for secure authentication.
-   ```
+External DNS IRSA
+-----------------
 
-## External DNS IRSA
+*   Use IRSA module.
+    
+*   Attach External DNS policy.
+    
+*   Example:
+    
 
-1. Use the IRSA module from the community.
-2. Attach an External DNS policy and set it to `true`.
-3. Allow `external-dns` service account to modify Route53 records:
+`external_dns_hosted_zone_arns = ["arn:aws:route53:::hostedzone/Z123456ABC"]`
 
-   ```hcl
-   external_dns_hosted_zone_arns = ["arn:aws:route53:::hostedzone/Z123456ABC"]
-   ```
+Add Provider and S3 Backend
+---------------------------
 
-## Add Provider and S3 Backend
+Terraform backend:
 
-1. Define an S3 backend for Terraform state management, add a key for the resource to be created later, and add the required version.:
-
-   ```hcl
+```
    terraform {
      backend "s3" {
        bucket = "eks-tfstate-amir"
@@ -130,214 +176,218 @@ To interact with Route53, Cert-Manager and External DNS need permissions:
        region = "eu-west-2"
      }
    }
-   ```
+```
 
-2. Add required Terraform providers:
-
-   ```hcl
+```
    provider "aws" {
      region = "eu-west-2"
    }
 
    provider "helm" {}
-   ```
-
--  With the required provider (aws) added, the helm provider is also added for later use for later use, to enable me to interact with the cluster.
-
--  Define the provider (aws). Core resources are complete.
-
-## Set AWS Access Keys
-
-For this, I will be using pre-existing access keys. Create one on aws, if necessary:
-
-```bash
-export AWS_ACCESS_KEY_ID="*****"
-export AWS_SECRET_ACCESS_KEY="*****"
-export AWS_DEFAULT_REGION="eu-west-2"
 ```
 
-Check authentication:
+Set AWS Access Keys
+-------------------
 
-```bash
+```
+export AWS_ACCESS_KEY_ID="*****"
+export AWS_SECRET_ACCESS_KEY="*****"
+export AWS_DEFAULT_REGION="eu-west-2
+```
+
+Verify/ check authentication:
+
+```
 aws sts get-caller-identity
 ```
 
-Expected error if S3 bucket is missing:
-
-```bash
-Error: Failed to get existing workspaces: S3 bucket "eks-tfstate-amir" does not exist.
-```
-
-## Create the S3 Bucket via ClickOps
-
-1. Manually create the bucket `eks-tfstate-amir` in AWS Console via s3, referring to the bucket name is irsa.tf `eks-tfstate-amir`.
-2. Run Terraform commands:
-
-   ```bash
-   terraform init
-   terraform plan
-   terraform apply --auto-approve
-   ```
-
-### Some terraform Resources created from this
-
-- `aws_kms_key`: Manages encryption keys.
-- `aws_iam_policy_document.this`: Defines IAM permissions for EKS-managed nodes.
-- `aws_eks_cluster`: Deploys the EKS cluster.
-- `aws_eks_fargate_profile`: Defines Fargate settings.
-- `aws_vpc`: Defines VPC settings.
-- `aws_subnet`: Creates subnets.
-- `aws_route_table`: Manages routing.
-
-/////
-
-# Add IAM rules to s3 via clickOps, Review+kubectl
-42. `aws eks --region eu-west-2 update-kubeconfig --name eks-lab`
-
-updates cluster context into a local cluster. When `kubectl get nodes` is entered it returns an error, as you cant access it. This where where you Configure eks IAM access entry via ClickOps on the AWS console to access the cluster on the Command Line Interface. Obtain the aws credentials arn for IAM access entry on the CLI with the command `aws sts get-caller-identity`.
-
-On the AWS console on Create Access Entry:
-1) 
- - IAM principle: Enter ARN
- - Username: eks-admin
- - Group name: admin
- - Policy name: Add `AmazonEKSAdminPolicy` and `AmazonEKSClusterPolicy`
-
-This gives the user access to the cluster. Generally for best practice, in production don't give these privileges and take a least privileges approach. After creation, you will have access to the cluster.
-
-# Deploying the resources
-
-in `helm.tf` deploy
-- CertManger
-- Nginx Ingress controller
-- External DNS
-
-Instead of a manual installation (`helm install`), this will be automated via terraform for best practice.
-
-*Note: Helm allows you to package a bunch of resources like pods, deployments, services, ingress etc. into one package, then places deploys into a helm chart. You install a helm chart into your cluster*
-
-### Nginx deployment and certManager deployment
-
-Nginx will be your endpoint, or access point for anything in your cluster.
-
-1) Create `helm.tf` deploy helm releases with the helm release for Nginx. Obtain the helm release from the registry, under provider. Set wait for waits for the IAM role to be created first and installCDRs is telling the helm chart to create CRDs alongside the certManager deployment.
-
-*Note:  Helm (a package manager for Kubernetes) has the ability to create a namespace automatically if it doesn’t already exist before deploying resources inside it.*
-
-2) Create a helm release for CertManager. In this instance, I want a custom certManager. This is done by creating a `helm-values folder > cert-manager.yaml` and we add some inputs (part of the helm chart) These values will customise your helm chart. Add the resources:
-
-- ingressShim
-- ExtraArgs
-- ServiceAccount
-
-### ExternalDNS deployment
-
-its important to create in the DNS for two reasons:
-
-  - When you can resource kubernetes and different applications and platform services, you want them to be in their own namespaces isolated from other resources and pods
-  - irsa created in the right namespace for each one (certManager and External DNS). If the IAM arent created in the right name spaces, they wont be able to access the charts (in helm release). So each `irsa.tf` role has to have access to each chart on `helm.tf`.
-
-1) Create External DNS chart values with `helm-values > external-dns.yaml` and add a External DNS resource block again within its own namespace named `external dns` including `set - wait for` and the values.
+If S3 bucket missing create one.
 
 
-Now all three resources have been created. Link helm.tf resources with a cluster by utilising a provider.
 
-Defines the Helm provider to manage Kubernetes resources using Helm by:
+Create the S3 Bucket via Console
+--------------------------------
 
-```
-"helm"
-Kubernetes  # helm accesses the actual cluster (kubernetes)
-host: Specifies the API server endpoint of the EKS cluster.
-cluster_ca_certificate = To access the helm cluster
-api_version = specifies APIVersion
-args = aws ["eks get-token", "--cluster-name", data.aws_eks_cluster.cluster.name]: executes authentication via AWS CLI
-```
-and a data block in `providers.tf` to export your eks cluster from `eks.tf` so it can be applied to arguments.
+*   Create bucket eks-tfstate-amir in AWS S3 console.
+    
 
-The ingress controller creates a (EC2) load balancer type service behind the scenes `kubectl get svc -n nginx-ingress`. This is the load balancer that hosts nginx. NLB load balancer (layer 4) so it goes straight through.
-include a file for troubleshooting.
+Terraform Resources Created
+---------------------------
 
-#### check Logs with:
-- `kubectl -n external-dns logs external-dns-5d5457fff-wpgd6`: 
-- `kubectl -n cert-manager logs cert-manager-66ff9fbf59-jg6gc`: cert-manager is ready but does not have a cluster issuer.
+*   aws\_kms\_key - encryption keys
+    
+*   aws\_iam\_policy\_document.this - IAM permissions
+    
+*   aws\_eks\_cluster - EKS cluster
+    
+*   aws\_eks\_fargate\_profile - Fargate config
+    
+*   aws\_vpc - VPC
+    
+*   aws\_subnet - Subnets
+    
+*   aws\_route\_table - Routing
+    
 
-## Deploying ArgoCD
+EKS Access Configuration, Review + kubectl
+==========================================
 
-Before deploying ArgoCD we need a cluster issuer - this allows us to verify SSL. I will use the `cert-man` folder for this.
+Update kubeconfig:
 
-There are 2 types of servers: Production and Staging server. For this a Production server is used.
+`aws eks --region eu-west-2 update-kubeconfig --name eks-lab`
 
-### Create issuer
+To allow kubectl access, configure EKS IAM access entry:
 
-When later creating an ingress resource. This issuer will  be referenced.
+### Via Terraform (Preffered)
 
-*My issuer file: `cert-man/issuer.yaml`*
-
-   - Deploy cert issuer with:
-```
-kubectl apply -f cert-man/issuer.yaml
-```
-   -  Use to view issuer status
-```
-kubectl get clusterissuers.cert-manager.io
-```
-
-
-   - View ingress and host URL with 
-```
-kubectl get ingress -A
-```
-### Create ArgoCD Deploy resource
-
-Create a ArgoCD helm release resource in helm.tf.
-
-external-dns will add the record to route 53 that will point to ArgoCD and cert-manager will verify that certificate.
+*   Create aws\_eks\_access\_entry with:
+    
+    *   `AmazonEKSAdminPolicy`
+        
+    *   `AmazonEKSClusterAdminPolicy`
 
 
-## ArgoCD
+### Via AWS Console
 
-ArgoCD will be deployable once the above steps are complete.
+1.  Create Access Entry with:
+    
+    *   IAM Principal ARN
+        
+    *   Username: eks-admin
+        
+    *   Group: admin
+        
+    *   Attach `AmazonEKSAdminPolicy` and `AmazonEKSClusterPolicy`
+        
 
-### Logging in
+Deploying the Resources
+=======================
 
-Username is admin. Retrieve argo password with 
+Use Terraform to deploy Helm releases:
 
-`kubectl get secret argocd-initial-admin-secret -n argo-cd -o jsonpath='{.data.password}' | base64 --decode`
+*   Cert-Manager
+    
+*   NGINX Ingress Controller
+    
+*   External DNS
+    
+
+### NGINX and Cert-Manager Helm Releases
+
+*   Helm deploys resources with namespace auto-creation.
+    
+*   Cert-Manager uses custom values in `helm-values/cert-manager.yaml`.
+    
+*   Set flags such as installCRDs = true to create CRDs.
+    
+
+### External DNS Deployment
+
+*   Create Helm values in `helm-values/external-dns.yaml`.
+    
+*   Deploy in its own namespace external-dns.
+    
+*   Ensure IRSA roles and Helm charts namespaces align.
+    
+
+Linking Helm Releases and Cluster Provider
+------------------------------------------
+
+*   Use the Helm provider with proper kubeconfig and AWS IAM role setup.
+    
+*   The ingress controller provisions an AWS Network Load Balancer (NLB), Layer 4 so it travels straight through.
+    
+*   Check NGINX ingress load balancer with:
+    
+
+`kubectl get svc -n nginx-ingress`
+
+### Check Logs
+
+`kubectl -n external-dns logs <external-dns>`
+`kubectl -n cert-manager logs <cert-manager>`
+
+Deploying ArgoCD
+----------------
+
+*   Create a **ClusterIssuer** with cert-man/issuer.yaml:
+    
+
+`kubectl apply -f cert-man/issuer.yaml`
+
+*   Verify issuer:
+    
+
+`kubectl get clusterissuers.cert-manager.io`
+
+*   Deploy ArgoCD Helm release in helm.tf.
+    
+*   External DNS manages DNS for ArgoCD; Cert-Manager manages SSL certificates.
+    
+
+### Logging into ArgoCD
+
+`kubectl get secret --namespace <your_namespace> <your_release_name> -o jsonpath='{.data.admin-password}' | base64 --decode`
+
+*   Username: admin
+*   Password: `kubectl get secret argocd-initial-admin-secret -n argo-cd -o jsonpath='{.data.password}' | base64 --decode`
+
 
 Breakdown of the above code
-```
-# Retrieves the secret in base64 #
- - kubectl get secret argocd-initial-admin-secret -n argo-cd -o 
- retrieves the secret in base64
 
-# decode base64 #
- - echo "*****" | base64 -d
-```
-
- ### Deploying application on ArgoCD
-
-App condition error will occur. Must deploy `app-argocd.yaml` and `deploy-config.yaml` on github first.
-
-Register Argo CD Application with
-```
-kubectl apply -f config-argo-app/app-argocd.yaml
-```
-
-### Prometheus and Grafana
-
-Configure the Prometheus and Grafana helm release and helm-values. 
-
-To fix the Grafana certificate issue, a new certificate was added on `grafana.yaml` (SecretName) and the Grafana dns was added to `issuer.yaml` dnsZones. 
-
-# Terraform Destroy steps
+1)   Retrieve secret in base64
 
 ```
-└> terraform destroy -target=module.helm.helm_release.nginx_ingress
-terraform destroy -target=module.helm.helm_release.cert_manager
-terraform destroy -target=module.helm.helm_release.external_dns
-terraform destroy -target=module.helm.helm_release.argocd_deploy
-terraform destroy -target=module.helm.helm_release.prometheus
+kubectl get secret argocd-initial-admin-secret -n argo-cd -o 
 ```
+
+
+2)   decode base64
+
+```
+- echo "*****" | base64 -d`
+```
+
+
+Prometheus and Grafana
+======================
+
+Prometheus and Grafana are deployed using Helm with values configured in `helm-values/`.
+
+### Grafana Certificate Fix
+
+*   A new certificate was added to `grafana.yaml` via the secretName field.
+    
+*   The Grafana domain was added to the DNS zones in issuer.yaml.
+    
+
+### Access Grafana - Log in
+
+`kubectl get secret --namespace prometheus prometheus-grafana -o jsonpath='{.data.admin-password}' 
+| base64 --decode`
+
+
+Persistent Storage
+------------------
+
+Persistent volumes have been configured to resolve ephemeral storage issues observed in Grafana.
+
+Terraform Destroy Steps
+=======================
+
+Step 1: Destroy Helm Releases
+-----------------------------
+
+```
+terraform destroy -target=module.helm.helm_release.nginx_ingress -auto-approve
+terraform destroy -target=module.helm.helm_release.cert_manager -auto-approve
+terraform destroy -target=module.helm.helm_release.external_dns -auto-approve
+terraform destroy -target=module.helm.helm_release.argocd_deploy -auto-approve
+terraform destroy -target=module.helm.helm_release.prometheus -auto-approve
+```
+
+Step 2: Destroy IRSA Roles
+--------------------------
 
 ```
 terraform destroy -auto-approve \
@@ -348,3 +398,4 @@ terraform destroy -auto-approve \
   -target="module.infrastructure.module.external_dns_irsa_role.aws_iam_role.this[0]" \
   -target="module.infrastructure.module.external_dns_irsa_role.aws_iam_role_policy_attachment.external_dns[0]"
   ```
+
