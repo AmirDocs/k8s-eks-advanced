@@ -6,7 +6,9 @@ Overview
 
 This project automates the deployment of an AWS EKS Kubernetes cluster using Terraform and Helm, integrating essential tools such as NGINX Ingress Controller, Cert-Manager for automatic SSL management via Let’s Encrypt, External DNS syncing with Route53, and optional ArgoCD for GitOps-based continuous deployment and Prometheus & Grafana for monitoring and observability. The cluster supports secure, public-facing apps via HTTPS with automated DNS and certificate management. AWS Fargate is mentioned but not used in this setup. Terraform manages infrastructure, IAM roles, and Helm chart deployments, enabling a DRY, scalable, and production-grade Kubernetes environment.
 
-<video controls src="screenshots/working-app-argocd.mp4" title="Preview of Argo CD and AI Model"></video>
+--------
+![AI Model with ArgoCD](screenshots/working-app-argocd-ezgif.com-video-to-gif-converter.gif)
+--------
 
 Objective
 ---------
