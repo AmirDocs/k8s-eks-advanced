@@ -325,6 +325,8 @@ Deploying ArgoCD
 *   Deploy ArgoCD Helm release in helm.tf.
     
 *   External DNS manages DNS for ArgoCD; Cert-Manager manages SSL certificates.
+
+`kubectl apply -f config-argo-app/app-argocd.yaml`
     
 
 ### Logging into ArgoCD
