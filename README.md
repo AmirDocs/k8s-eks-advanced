@@ -367,8 +367,8 @@ Prometheus and Grafana are deployed using Helm with values configured in `helm-v
 
 ### Access Grafana - Log in
 
-`kubectl get secret --namespace prometheus prometheus-grafana -o jsonpath='{.data.admin-password}' 
-| base64 --decode`
+`kubectl get secret --namespace prometheus prometheus-grafana -o jsonpath="{.data.admin-password}" | base64 --decode`
+
 
 
 Persistent Storage

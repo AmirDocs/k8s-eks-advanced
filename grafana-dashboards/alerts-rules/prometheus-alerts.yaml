@@ -1,0 +1,20 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: prometheus-alerts
+  namespace: prometheus
+  labels:
+    role: prometheus-rule
+    prometheus: kube-prometheus
+spec:
+  groups:
+    - name: site-alerts
+      rules:
+        - alert: HighSiteTraffic
+          expr: sum(rate(http_requests_total[1m])) > 10
+          for: 2m
+          labels:
+            severity: warning
+          annotations:
+            summary: "High traffic on the site"
+            description: "Site is receiving more than 10 requests/sec for 2 minutes"

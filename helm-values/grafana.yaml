@@ -11,3 +11,9 @@ grafana:
     - secretName: grafana-tls
       hosts:
       - grafana.lab.amirbeile.uk
+  
+    sidecar:
+    dashboards:
+      enabled: true
+      label: grafana_dashboard
+      searchNamespace: ALL

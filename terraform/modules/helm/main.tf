@@ -9,8 +9,10 @@ resource "helm_release" "nginx_ingress" {
   create_namespace = true
   namespace        = "ingress-nginx"
 
+  values = [
+    file("../helm-values/nginx-metrics.yaml")
+  ]
 }
-
 
 resource "helm_release" "cert_manager" {
 
@@ -31,7 +33,7 @@ resource "helm_release" "cert_manager" {
     name  = "installCRDs" # custom resource definitions
     value = "true"
   }
-  
+
 
   values = [
     file("../helm-values/cert-manager.yaml")
@@ -43,13 +45,13 @@ resource "helm_release" "cert_manager" {
 
 resource "helm_release" "external_dns" {
 
-  name = "external-dns"
+  name       = "external-dns"
   repository = "oci://registry-1.docker.io/bitnamicharts" # changed from bitnami to io.
   chart      = "external-dns"
 
   create_namespace = true
   namespace        = "external-dns"
-  version = "8.3.5"
+  version          = "8.3.5"
 
   set {
     name  = "wait-for"
@@ -68,7 +70,7 @@ resource "helm_release" "argocd_deploy" {
   name       = "argocd"
   repository = "https://argoproj.github.io/argo-helm"
   chart      = "argo-cd"
-  version   = "5.19.15"
+  version    = "5.19.15"
   timeout    = "600"
 
   namespace        = "argo-cd"
@@ -82,19 +84,24 @@ resource "helm_release" "argocd_deploy" {
 }
 
 resource "helm_release" "prometheus" {
-
   name       = "prometheus"
   repository = "https://prometheus-community.github.io/helm-charts"
   chart      = "kube-prometheus-stack"
   timeout    = "600"
 
-  create_namespace = true
+  create_namespace = true  # Already created
   namespace        = "prometheus"
 
   values = [
     file("../helm-values/prometheus.yaml"),
-    file("../helm-values/grafana.yaml")
+    file("../helm-values/grafana.yaml"),
   ]
+}
 
+resource "kubernetes_manifest" "prometheus_alert_rules" {
+  manifest = yamldecode(file("../grafana-dashboards/alerts-rules/prometheus-alerts.yaml"))
+}
 
+resource "kubernetes_manifest" "detect_app_servicemonitor" {
+  manifest = yamldecode(file("../grafana-dashboards/alerts-rules/servicemonitor-detect.yaml"))
 }

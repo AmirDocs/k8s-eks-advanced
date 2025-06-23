@@ -15,7 +15,7 @@ terraform {
     }
     helm = {
       source  = "hashicorp/helm"
-      version = ">= 2.6"
+      version = "~> 2.11.0"
     }
   }
 }
@@ -35,4 +35,8 @@ provider "helm" {
       command     = "aws"
     }
   }
+}
+
+provider "kubernetes" {
+  config_path = "~/.kube/config"
 }

@@ -21,7 +21,7 @@ module "vpc" {
 
   public_subnet_tags = {
     "kubernetes.io/cluster/${var.local_name}" = "shared"
-    "kubernetes.io/role/internal-elb"     = 1
+    "kubernetes.io/role/internal-elb"         = 1
   }
 
   tags = var.tags
@@ -94,7 +94,7 @@ resource "aws_eks_access_policy_association" "policy-association2" {
 # IRSA Roles Cert Manager and External DNS
 
 module "cert_manager_irsa_role" {
-  source = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
+  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
   version = "5.2.0"
 
   role_name                     = "cert-manager"

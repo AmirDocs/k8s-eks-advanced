@@ -13,3 +13,34 @@ prometheus:
     - secretName: wildcard-tls
       hosts:
       - prometheus.lab.amirbeile.uk
+
+  prometheusSpec:
+    serviceMonitorSelectorNilUsesHelmValues: false
+  
+  serverFiles:
+  prometheus.yml:
+    rule_files:
+      - /etc/prometheus/rules/site-traffic.yaml
+
+  extraConfigmapMounts:
+  - name: site-traffic-rules
+    mountPath: /etc/prometheus/rules/
+    configMap: site-traffic-rules
+    readOnly: true
+  
+  alertmanager:
+  alertmanagerSpec:
+    env:
+      - name: SLACK_WEBHOOK_URL
+        value: "https://hooks.slack.com/services/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"
+    config:
+      global:
+        resolve_timeout: 5m
+      route:
+        receiver: 'slack-notifications'
+      receivers:
+        - name: 'slack-notifications'
+          slack_configs:
+            - send_resolved: true
+              text: "{{ .CommonAnnotations.summary }}"
+              api_url: "https://hooks.slack.com/services/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"

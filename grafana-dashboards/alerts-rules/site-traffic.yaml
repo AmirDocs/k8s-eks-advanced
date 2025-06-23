@@ -1,0 +1,19 @@
+site-traffic.json: |-
+  {
+    "title": "Site Traffic Overview",
+    "panels": [
+      {
+        "type": "graph",
+        "title": "Number of Hits",
+        "targets": [
+          {
+            "expr": "sum(rate(http_requests_total[1m]))",
+            "legendFormat": "Hits per second"
+          }
+        ],
+        "id": 1
+      }
+    ],
+    "schemaVersion": 30,
+    "version": 1
+  }
