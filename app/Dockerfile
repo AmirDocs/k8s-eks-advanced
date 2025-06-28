@@ -6,6 +6,8 @@ WORKDIR /app
 # Install Python dependencies only
 RUN pip install --no-cache-dir flask
 
+RUN pip install --no-cache-dir flask prometheus_flask_exporter
+
 # Copy the entire app directory (as in your original Dockerfile)
 COPY . .
 
