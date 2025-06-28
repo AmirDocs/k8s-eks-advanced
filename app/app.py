@@ -1,11 +1,17 @@
 from flask import Flask, render_template, jsonify
 from prometheus_flask_exporter import PrometheusMetrics
+from prometheus_client import Counter
 import json
 import os
 import subprocess
 
 app = Flask(__name__)
 metrics = PrometheusMetrics(app)
+
+http_requests_total = Counter(
+    'http_requests_total',
+    'Total HTTP requests'
+)
 
 try:
     import ultralytics
