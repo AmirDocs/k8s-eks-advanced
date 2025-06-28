@@ -13,5 +13,5 @@ spec:
     matchNames:
       - detect-config
   endpoints:
-    - port: http
+    - port: 3000
       interval: 15s

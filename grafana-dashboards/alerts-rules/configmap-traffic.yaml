@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: site-traffic-dashboard
+  namespace: prometheus       
+  labels:
+    grafana_dashboard: "1"
+data:
+  site-traffic.json: |-
+    {
+      "title": "Site Traffic Overview",
+      "panels": [
+        {
+          "type": "graph",
+          "title": "Number of Hits",
+          "targets": [
+            {
+              "expr": "sum(rate(http_requests_total[1m]))",
+              "legendFormat": "Hits per second"
+            }
+          ],
+          "id": 1
+        }
+      ],
+      "schemaVersion": 30,
+      "version": 1
+    }

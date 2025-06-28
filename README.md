@@ -58,13 +58,13 @@ Steps
 Dockerfile Build
 ----------------
 
-1.  `aws ecr get-login-password --region | docker login --username AWS --password-stdin .dkr.ecr..amazonaws.com`
+1.  `aws ecr get-login-password --region <region> | docker login --username AWS --password-stdin <ID number>.dkr.ecr.<region>.amazonaws.com`
     
 2.  `docker build -t detect-app .`
     
-3.  `docker tag detect-app:latest .dkr.ecr..amazonaws.com/detect-app:latest`
+3.  `docker tag detect-app:latest <ID number>.dkr.ecr.<region>.amazonaws.com/detect-app:latest`
     
-4.  `docker push .dkr.ecr..amazonaws.com/detect-app:latest`
+4.  `docker push <ID number>.dkr.ecr.<region>.amazonaws.com/detect-app:latest`
     
 
 Delegate Cloudflare Domain to AWS

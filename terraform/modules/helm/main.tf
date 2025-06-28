@@ -107,3 +107,7 @@ resource "kubernetes_manifest" "detect_app_servicemonitor" {
   manifest = yamldecode(file("../grafana-dashboards/alerts-rules/servicemonitor-detect.yaml"))
 
 }
+
+resource "kubernetes_manifest" "site_traffic_dashboard" {
+  manifest = yamldecode(file("../grafana-dashboards/alerts-rules/configmap-traffic.yaml"))
+}
