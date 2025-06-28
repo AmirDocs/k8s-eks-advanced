@@ -9,9 +9,9 @@ resource "helm_release" "nginx_ingress" {
   create_namespace = true
   namespace        = "ingress-nginx"
 
-  values = [
-    file("../helm-values/nginx-metrics.yaml")
-  ]
+  # values = [
+  #   file("../helm-values/nginx-metrics.yaml")
+  # ]
 }
 
 resource "helm_release" "cert_manager" {
@@ -100,8 +100,10 @@ resource "helm_release" "prometheus" {
 
 resource "kubernetes_manifest" "prometheus_alert_rules" {
   manifest = yamldecode(file("../grafana-dashboards/alerts-rules/prometheus-alerts.yaml"))
+
 }
 
 resource "kubernetes_manifest" "detect_app_servicemonitor" {
   manifest = yamldecode(file("../grafana-dashboards/alerts-rules/servicemonitor-detect.yaml"))
+
 }
