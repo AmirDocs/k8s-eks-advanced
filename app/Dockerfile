@@ -4,7 +4,6 @@ FROM python:3.12-slim AS builder
 WORKDIR /app
 
 # Install Python dependencies only
-RUN pip install --no-cache-dir flask
 
 RUN pip install --no-cache-dir flask prometheus_flask_exporter
 

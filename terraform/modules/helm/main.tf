@@ -111,3 +111,9 @@ resource "kubernetes_manifest" "detect_app_servicemonitor" {
 resource "kubernetes_manifest" "site_traffic_dashboard" {
   manifest = yamldecode(file("../grafana-dashboards/alerts-rules/configmap-traffic.yaml"))
 }
+
+resource "null_resource" "apply_local_storage" {
+  provisioner "local-exec" {
+    command = "kubectl apply -f ../storage/local-storage.yaml"
+  }
+}
