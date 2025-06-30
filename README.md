@@ -390,7 +390,7 @@ terraform destroy -target=module.helm.helm_release.argocd_deploy -auto-approve
 terraform destroy -target=module.helm.helm_release.prometheus -auto-approve
 terraform destroy -target=module.helm.kubernetes_manifest.detect_app_servicemonitor -auto-approve
 terraform destroy -target=module.helm.kubernetes_manifest.prometheus_alert_rules -auto-approve
-
+terraform destroy -target=module.helm.kubernetes_manifest.site_traffic_dashboard -auto-approve
 ```
 
 Step 2: Destroy IRSA Roles

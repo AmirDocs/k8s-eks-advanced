@@ -1,4 +1,4 @@
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, jsonify, Response
 from prometheus_flask_exporter import PrometheusMetrics
 from prometheus_client import Counter
 import json
@@ -7,11 +7,6 @@ import subprocess
 
 app = Flask(__name__)
 metrics = PrometheusMetrics(app)
-
-http_requests_total = Counter(
-    'http_requests_total',
-    'Total HTTP requests'
-)
 
 try:
     import ultralytics
@@ -47,21 +42,17 @@ def index():
 # API endpoint to trigger the model
 @app.route("/api/run-model", methods=["POST"])
 def run_model():
-    try:
         # Step 1: Clear the results folder
         clear_results_folder()
 
         # Step 2: Run the model.py script
         subprocess.run(["python", "model.py"], check=True)
         return jsonify({"message": "Model executed successfully."})
-    except subprocess.CalledProcessError as e:
-        return jsonify({"error": f"Error executing model: {str(e)}"}), 500
 
 @app.route("/api/images", methods=["GET"])
 def get_results():
     results = load_results()
     return jsonify(results)
 
-
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=3000)
+    app.run(host="0.0.0.0", port=3000, debug=False)

@@ -1,8 +1,13 @@
 __pycache__
 *.pyc
-*.git
+.git
 *.log
 .env
 node_modules/
 tmp/
-build/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+.venv/
+venv/

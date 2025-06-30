@@ -25,7 +25,7 @@ spec:
       volumes:
         - name: local-pvc
           persistentVolumeClaim:
-          claimName: local-pvc
+            claimName: local-pvc
 
 ---
 apiVersion: v1
